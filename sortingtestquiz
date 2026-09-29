@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hogwarts Sorting Ceremony & Certificate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include html2pdf.js for client-side certificate PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        'cinzel-dec': ['Cinzel Decorative', 'serif'],
+                        garamond: ['EB Garamond', 'serif'],
+                    },
+                    colors: {
+                        parchment: {
+                            light: '#f4ecd8',
+                            DEFAULT: '#e6dab1',
+                            dark: '#d4c287',
+                            border: '#8c7853',
+                        },
+                        magic: {
+                            gold: '#d4af37',
+                            darkgold: '#aa820a',
+                            crimson: '#740001',
+                            emerald: '#1a472a',
+                            bronze: '#222f5b',
+                            yellow: '#ecb939',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0d13;
+            background-image: radial-gradient(circle at 50% 30%, #1a1e29 0%, #0b0d13 80%);
+            color: #2c221e;
+        }
+        .parchment-texture {
+            background-color: #f3e9c9;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 80px rgba(140, 120, 83, 0.3);
+        }
+        .magical-glow {
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .floating {
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.8); }
+        }
+        .glow-box {
+            animation: pulse-glow 3s infinite;
+        }
+        /* Custom scrollbar for immersive reading */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #11141d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8c7853;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col items-center justify-between font-garamond selection:bg-amber-200 selection:text-amber-900 overflow-x-hidden p-4 md:p-6 min-h-screen">
+
+    <header class="w-full max-w-3xl text-center py-4 flex flex-col items-center">
+        <h1 class="font-cinzel-dec text-3xl md:text-5xl text-magic-gold magical-glow tracking-widest">HOGWARTS</h1>
+        <p class="font-cinzel text-amber-100/70 text-xs md:text-sm tracking-widest mt-1 uppercase">School of Witchcraft and Wizardry</p>
+        <div class="w-48 h-0.5 bg-gradient-to-r from-transparent via-magic-gold to-transparent my-3"></div>
+    </header>
+
+    <main class="w-full max-w-2xl flex-1 flex flex-col justify-center items-center my-2">
+        <div id="app-container" class="w-full parchment-texture border-4 border-amber-900/40 rounded-xl p-6 md:p-10 relative overflow-hidden transition-all duration-700 shadow-2xl">
+            
+            <!-- Corner magical filigree ornaments -->
+            <div class="absolute top-2 left-2 text-amber-900/30 font-cinzel text-xl">✦</div>
+            <div class="absolute top-2 right-2 text-amber-900/30 font-cinzel text-xl">✦</div>
+            <div class="absolute bottom-2 left-2 text-amber-900/30 font-cinzel text-xl">✦</div>
+            <div class="absolute bottom-2 right-2 text-amber-900/30 font-cinzel text-xl">✦</div>
+
+            <!-- Welcome Screen View -->
+            <div id="welcome-view" class="text-center space-y-6">
+                <div class="floating inline-block text-5xl md:text-6xl mb-2">🧙‍♂️📜</div>
+                <h2 class="font-cinzel text-2xl md:text-3xl font-bold text-amber-950 tracking-wide">The Sorting Ceremony</h2>
+                <p class="text-lg md:text-xl text-amber-900 max-w-lg mx-auto leading-relaxed italic">
+                    "The Sorting is a very important ceremony because, while you are here, your house will be something like your family within Hogwarts..."
+                </p>
+                <p class="text-sm text-amber-800/80">Answer truthfully, let down your guard, and let the ancient magic find where you truly belong.</p>
+                <div class="pt-4">
+                    <button onclick="startQuiz()" class="font-cinzel font-bold text-amber-100 bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 hover:from-amber-950 hover:to-amber-950 px-8 py-3.5 rounded-lg shadow-lg border-2 border-magic-gold transition-all transform hover:scale-105 active:scale-95 glow-box">
+                        Sit Upon the Stool
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sequential Quiz Questions View -->
+            <div id="quiz-view" class="hidden space-y-6">
+                <div class="flex justify-between items-center border-b border-amber-900/20 pb-3">
+                    <span id="question-counter" class="font-cinzel font-bold text-xs md:text-sm text-amber-800 tracking-wider">QUESTION I OF VII</span>
+                    <span id="house-hint" class="font-cinzel text-xs text-amber-900/60 italic">The Hat is whispering...</span>
+                </div>
+
+                <div class="min-h-[120px] flex items-center justify-center">
+                    <h3 id="question-text" class="font-cinzel text-xl md:text-2xl text-amber-950 text-center font-semibold leading-snug">
+                        <!-- Dynamic Question -->
+                    </h3>
+                </div>
+
+                <div id="options-container" class="space-y-3.5 pt-2">
+                    <!-- Dynamic Options -->
+                </div>
+            </div>
+
+            <!-- Sorting Hat Deliberation Animation View -->
+            <div id="thinking-view" class="hidden text-center py-12 space-y-6">
+                <div class="floating text-6xl md:text-7xl mb-4">🎩</div>
+                <h3 class="font-cinzel text-2xl md:text-3xl text-amber-950 font-bold">The Sorting Hat is pondering...</h3>
+                <p id="sorting-thought" class="font-garamond text-xl text-amber-900 italic max-w-md mx-auto">
+                    "Hmm... difficult, very difficult..."
+                </p>
+                <div class="w-32 h-1 bg-amber-900/20 mx-auto rounded-full overflow-hidden">
+                    <div class="w-full h-full bg-magic-gold animate-[pulse_1s_infinite]"></div>
+                </div>
+            </div>
+
+            <!-- Final Result & Certificate Generator View -->
+            <div id="result-view" class="hidden text-center space-y-6">
+                <div class="font-cinzel text-xs md:text-sm text-amber-800 tracking-widest uppercase">The Sorting Hat has decided!</div>
+                
+                <div class="py-2">
+                    <div id="house-crest" class="text-6xl md:text-7xl mb-2 floating">🦁</div>
+                    <h2 id="house-name" class="font-cinzel-dec text-4xl md:text-5xl font-bold tracking-wider mb-2">GRYFFINDOR</h2>
+                    <div id="house-traits" class="font-cinzel text-xs md:text-sm tracking-widest text-amber-900/80 uppercase font-semibold">
+                        Daring • Nerve • Chivalry
+                    </div>
+                </div>
+
+                <div class="w-32 h-0.5 bg-amber-900/30 mx-auto"></div>
+
+                <p id="house-description" class="text-lg md:text-xl text-amber-950 leading-relaxed italic max-w-lg mx-auto">
+                    <!-- Dynamic house description -->
+                </p>
+
+                <!-- Certificate of Acceptance Generator Section -->
+                <div class="bg-amber-950/10 border-2 border-amber-900/30 rounded-xl p-5 mt-6 text-left space-y-4">
+                    <h4 class="font-cinzel font-bold text-amber-950 text-base md:text-lg text-center flex items-center justify-center gap-2">
+                        <span>📜</span> Official Certificate of Acceptance
+                    </h4>
+                    <p class="text-xs md:text-sm text-amber-900 text-center italic">
+                        Enter your full legal wizarding name below to inscribe and download your official Hogwarts School Certificate of Acceptance and House Assignment.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <input type="text" id="wizard-name-input" placeholder="e.g. Harry Potter / Hermione Granger" class="flex-1 px-4 py-2.5 rounded-lg border border-amber-900/40 bg-amber-50/80 font-garamond text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-800 text-base">
+                        <button onclick="generateCertificatePDF()" class="font-cinzel font-bold text-amber-100 bg-amber-900 hover:bg-amber-950 px-6 py-2.5 rounded-lg shadow border border-magic-gold transition-all transform hover:scale-105 whitespace-nowrap">
+                            Generate & Download PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex flex-col sm:flex-row justify-center gap-4">
+                    <button onclick="resetQuiz()" class="font-cinzel font-bold text-amber-950 bg-amber-200/80 hover:bg-amber-300 px-6 py-3 rounded-lg shadow border border-amber-900/30 transition-all transform hover:scale-105">
+                        Retake Sorting
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Hidden Printable Certificate Template Layout for PDF Generation -->
+    <div style="display: none;">
+        <div id="certificate-template" style="width: 800px; padding: 50px; background-color: #f9f3e3; border: 12px solid #5c4033; font-family: 'EB Garamond', serif; color: #2c221e; box-sizing: border-box; position: relative;">
+            <!-- Inner decorative border -->
+            <div style="border: 3px solid #d4af37; padding: 40px; text-align: center; position: relative;">
+                
+                <div style="font-size: 42px; margin-bottom: 10px;">⚡</div>
+                <div style="font-family: 'Cinzel Decorative', serif; font-size: 26px; font-weight: bold; color: #5c4033; letter-spacing: 2px;">HOGWARTS SCHOOL OF WITCHCRAFT AND WIZARDRY</div>
+                <div style="font-family: 'Cinzel', serif; font-size: 13px; color: #8c7853; letter-spacing: 4px; margin-top: 5px; text-transform: uppercase;">Headmaster: Albus Dumbledore &bull; Order of Merlin (First Class)</div>
+                
+                <div style="width: 150px; height: 1px; background-color: #d4af37; margin: 25px auto;"></div>
+
+                <div style="font-family: 'Cinzel', serif; font-size: 16px; font-weight: bold; color: #5c4033; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px;">Certificate of Official House Assignment</div>
+
+                <p style="font-size: 18px; line-height: 1.6; font-style: italic; margin-bottom: 15px;">
+                    This official document is proudly presented to certify that upon deliberation of the Ancient Sorting Hat,
+                </p>
+
+                <div id="cert-student-name" style="font-family: 'Cinzel Decorative', serif; font-size: 32px; font-weight: bold; color: #740001; margin: 20px 0; border-bottom: 2px solid #d4af37; display: inline-block; padding: 0 30px;">
+                    [Student Name]
+                </div>
+
+                <p style="font-size: 18px; line-height: 1.6; font-style: italic; margin: 15px 0 25px 0;">
+                    has been formally tested and rightfully sorted into the noble and esteemed house of:
+                </p>
+
+                <div id="cert-house-name" style="font-family: 'Cinzel Decorative', serif; font-size: 36px; font-weight: bold; color: #1a472a; letter-spacing: 2px; margin-bottom: 10px;">
+                    [HOUSE NAME]
+                </div>
+                <div id="cert-house-traits" style="font-family: 'Cinzel', serif; font-size: 14px; font-weight: bold; color: #8c7853; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 35px;">
+                    [Traits]
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px; padding: 0 30px;">
+                    <div style="text-align: center;">
+                        <div style="font-family: 'Cinzel Decorative', serif; font-size: 18px; color: #5c4033; font-style: italic; margin-bottom: 5px;">Minerva McGonagall</div>
+                        <div style="width: 180px; height: 1px; background-color: #5c4033; margin: 0 auto;"></div>
+                        <div style="font-family: 'Cinzel', serif; font-size: 11px; color: #8c7853; letter-spacing: 1px; margin-top: 5px; text-transform: uppercase;">Deputy Headmistress</div>
+                    </div>
+                    <div style="font-size: 50px;">
+                        wax ⚜️
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-family: 'Cinzel Decorative', serif; font-size: 18px; color: #5c4033; font-style: italic; margin-bottom: 5px;">The Sorting Hat</div>
+                        <div style="width: 180px; height: 1px; background-color: #5c4033; margin: 0 auto;"></div>
+                        <div style="font-family: 'Cinzel', serif; font-size: 11px; color: #8c7853; letter-spacing: 1px; margin-top: 5px; text-transform: uppercase;">Artifact of Hogwarts</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-2 text-xs font-cinzel text-amber-100/40 tracking-wider">
+        Mischief Managed &bull; Hogwarts School of Witchcraft and Wizardry
+    </footer>
+
+    <script>
+        /* ==========================================================
+           1. QUIZ QUESTIONS & HOUSE MAPPING DATASET
+           Each answer option explicitly declares an associated 'house'.
+           ========================================================== */
+        const questions = [
+            {
+                text: "Dawn or Dusk?",
+                options: [
+                    { text: "Dawn — Awakening, new beginnings, and fresh sunlight.", house: "Gryffindor" },
+                    { text: "Dusk — Twilight shadows, quiet mysteries, and hidden depths.", house: "Slytherin" },
+                    { text: "Neither, the starry night sky where knowledge thrives.", house: "Ravenclaw" },
+                    { text: "A warm afternoon bathed in golden countryside warmth.", house: "Hufflepuff" }
+                ]
+            },
+            {
+                text: "When you are gone, what would you most like people to remember of you?",
+                options: [
+                    { text: "My daring deeds and the bold obstacles I conquered.", house: "Gryffindor" },
+                    { text: "My greatness, my achievements, and my influence.", house: "Slytherin" },
+                    { text: "My wisdom, my intellect, and the secrets I unlocked.", house: "Ravenclaw" },
+                    { text: "My kindness, my fairness, and how warmly I treated others.", house: "Hufflepuff" }
+                ]
+            },
+            {
+                text: "You stumble across an enchanted, locked chest in the Restricted Section. What do you do?",
+                options: [
+                    { text: "Try to pry it open immediately! Who knows what thrilling magic lies inside?", house: "Gryffindor" },
+                    { text: "Examine the lock and figure out how it can benefit or empower me.", house: "Slytherin" },
+                    { text: "Study the intricate runes carved into the wood to understand its origins.", house: "Ravenclaw" },
+                    { text: "Leave it be or report it to a professor; it doesn't belong to me.", house: "Hufflepuff" }
+                ]
+            },
+            {
+                text: "Which kind of instrument most deeply pleases your ear?",
+                options: [
+                    { text: "The stirring, triumphant blast of brass trumpets.", house: "Gryffindor" },
+                    { text: "The cold, sleek, elegant notes of a violin in the dark.", house: "Slytherin" },
+                    { text: "The ethereal, complex harmonies of a classical piano or harp.", house: "Ravenclaw" },
+                    { text: "The warm, earthy strumming of an acoustic lute by a hearth fire.", house: "Hufflepuff" }
+                ]
+            },
+            {
+                text: "You are faced with a dark magical creature blocking your path. What is your primary instinct?",
+                options: [
+                    { text: "Draw your wand and charge forward to fight it head-on!", house: "Gryffindor" },
+                    { text: "Assess its weaknesses or see if it can be commanded or outsmarted.", house: "Slytherin" },
+                    { text: "Recall everything you've ever read about this specific beast to solve the riddle.", house: "Ravenclaw" },
+                    { text: "Stand firm to protect your companions behind you.", house: "Hufflepuff" }
+                ]
+            },
+            {
+                text: "Which of these traits do you despise most in others?",
+                options: [
+                    { text: "Cowardice, hesitation, and fear of taking a stand.", house: "Gryffindor" },
+                    { text: "Mediocrity, weakness, and lack of ambition.", house: "Slytherin" },
+                    { text: "Ignorance, closed-mindedness, and foolishness.", house: "Ravenclaw" },
+                    { text: "Cruelty, selfishness, and disloyalty.", house: "Hufflepuff" }
+                ]
+            },
+            {
+                text: "You enter a magical garden. Which peculiar plant draws your attention first?",
+                options: [
+                    { text: "A glowing, fiery Snapdragon that crackles with sparks.", house: "Gryffindor" },
+                    { text: "A sleek, hypnotic Nightshade with venomous purple blooms.", house: "Slytherin" },
+                    { text: "A rare, floating Luminescent Fern that radiates ancient formulas.", house: "Ravenclaw" },
+                    { text: "A patch of sweet-smelling Mandrakes or golden Honey-blooms.", house: "Hufflepuff" }
+                ]
+            }
+        ];
+
+        const houseDetails = {
+            Gryffindor: {
+                name: "GRYFFINDOR",
+                crest: "🦁",
+                traits: "Daring • Nerve • Chivalry",
+                colorText: "text-red-900",
+                description: "You belong in Gryffindor, where dwell the brave at heart! Their daring, nerve, and chivalry set Gryffindors apart. Your fierce courage and willingness to stand for what is right will guide you through the darkest of times."
+            },
+            Slytherin: {
+                name: "SLYTHERIN",
+                crest: "🐍",
+                traits: "Ambition • Cunning • Resourcefulness",
+                colorText: "text-emerald-900",
+                description: "Or perhaps in Slytherin, you'll make your real friends, those cunning folk use any means, to achieve their ends. Your sharp ambition, tactical mind, and unwavering determination ensure you shall conquer any obstacle in your path."
+            },
+            Ravenclaw: {
+                name: "RAVENCLAW",
+                crest: "🦅",
+                traits: "Wit • Learning • Wisdom",
+                colorText: "text-blue-950",
+                description: "If you've a ready mind, where those of wit and learning, will always find their kind. Your deep curiosity, thirst for knowledge, and exceptional intellect place you among Hogwarts' finest scholars."
+            },
+            Hufflepuff: {
+                name: "HUFFLEPUFF",
+                crest: "🦡",
+                traits: "Loyalty • Dedication • Patience",
+                colorText: "text-amber-900",
+                description: "You might belong in Hufflepuff, where they are just and loyal, those patient Hufflepuffs are true, and unafraid of toil. Your profound kindness, steadfast dedication, and unwavering loyalty are the heart of the wizarding world."
+            }
+        };
+
+        // State tracking variables
+        let currentQuestionIndex = 0;
+        
+        // ==========================================================
+        // 2. HOUSE POINT-TALLYING SCORECARD OBJECT
+        // This object stores the cumulative points added per house as the user answers.
+        // ==========================================================
+        let houseScores = { 
+            Gryffindor: 0, 
+            Slytherin: 0, 
+            Ravenclaw: 0, 
+            Hufflepuff: 0 
+        };
+        
+        let finalWinningHouse = 'Gryffindor';
+
+        const welcomeView = document.getElementById('welcome-view');
+        const quizView = document.getElementById('quiz-view');
+        const thinkingView = document.getElementById('thinking-view');
+        const resultView = document.getElementById('result-view');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+
+        // Initialize and start quiz
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            // Reset scores back to 0 at the start of a new quiz attempt
+            houseScores = { Gryffindor: 0, Slytherin: 0, Ravenclaw: 0, Hufflepuff: 0 };
+            welcomeView.classList.add('hidden');
+            resultView.classList.add('hidden');
+            quizView.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        // Render current question and options
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            questionCounter.innerText = `QUESTION ${romanNumeral(currentQuestionIndex + 1)} OF ${romanNumeral(questions.length)}`;
+            questionText.innerText = q.text;
+            
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-lg bg-amber-100/60 hover:bg-amber-200/80 border border-amber-900/20 font-garamond text-amber-950 text-lg md:text-xl transition-all transform hover:translate-x-1 shadow-sm flex items-center space-x-3 group";
+                btn.innerHTML = `
+                    <span class="w-7 h-7 flex-shrink-0 rounded-full border border-amber-900/40 flex items-center justify-center font-cinzel text-xs text-amber-900 group-hover:bg-amber-900 group-hover:text-amber-100 transition-colors">${String.fromCharCode(65 + idx)}</span>
+                    <span class="flex-1">${opt.text}</span>
+                `;
+                
+                // When an option is clicked, invoke selectAnswer with its target House
+                btn.onclick = () => selectAnswer(opt.house);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // ==========================================================
+        // 3. POINT TALLYING LOGIC FUNCTION
+        // ==========================================================
+        function selectAnswer(house) {
+            // Adds +1 point to the chosen house in our houseScores scorecard object
+            if (houseScores.hasOwnProperty(house)) {
+                houseScores[house] += 1;
+                console.log(`Added 1 point to ${house}. Current Scores:`, houseScores);
+            }
+
+            // Advance to the next question or conclude quiz
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                quizView.classList.add('opacity-0');
+                setTimeout(() => {
+                    loadQuestion();
+                    quizView.classList.remove('opacity-0');
+                }, 300);
+            } else {
+                showThinkingProcess();
+            }
+        }
+
+        // Sorting Hat deliberation animation
+        function showThinkingProcess() {
+            quizView.classList.add('hidden');
+            thinkingView.classList.remove('hidden');
+
+            const thoughts = [
+                "Hmm... difficult, very difficult...",
+                "Plenty of courage, I see... and a great mind too...",
+                "There's talent, oh yes, and a thirst to prove yourself...",
+                "Where to put you? Let me peer into your depths..."
+            ];
+
+            let step = 0;
+            const thoughtInterval = setInterval(() => {
+                step++;
+                if (step < thoughts.length) {
+                    document.getElementById('sorting-thought').innerText = `"${thoughts[step]}"`;
+                } else {
+                    clearInterval(thoughtInterval);
+                    finalizeSorting();
+                }
+            }, 1000);
+        }
+
+        // Calculate winning house based on highest points tallied
+        function finalizeSorting() {
+            thinkingView.classList.add('hidden');
+            
+            // Determine house with highest accumulated score
+            let maxScore = -1;
+            for (const [house, score] of Object.entries(houseScores)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    finalWinningHouse = house;
+                }
+            }
+
+            const data = houseDetails[finalWinningHouse];
+            document.getElementById('house-crest').innerText = data.crest;
+            
+            const houseNameEl = document.getElementById('house-name');
+            houseNameEl.innerText = data.name;
+            houseNameEl.className = `font-cinzel-dec text-4xl md:text-5xl font-bold tracking-wider mb-2 ${data.colorText}`;
+
+            document.getElementById('house-traits').innerText = data.traits;
+            document.getElementById('house-description').innerText = data.description;
+
+            resultView.classList.remove('hidden');
+        }
+
+        // Certificate PDF generator
+        function generateCertificatePDF() {
+            const nameInput = document.getElementById('wizard-name-input').value.trim();
+            if (!nameInput) {
+                alertBox("Please enter your full wizarding name before generating the certificate!");
+                return;
+            }
+
+            document.getElementById('cert-student-name').innerText = nameInput;
+            const data = houseDetails[finalWinningHouse];
+            document.getElementById('cert-house-name').innerText = data.name;
+            document.getElementById('cert-house-traits').innerText = data.traits;
+
+            const element = document.getElementById('certificate-template');
+            element.style.display = 'block';
+
+            const opt = {
+                margin:       10,
+                filename:     `Hogwarts_Certificate_${nameInput.replace(/\s+/g, '_')}_${data.name}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                element.style.display = 'none';
+                alertBox(`Your official Hogwarts Certificate for ${nameInput} has been generated and downloaded successfully! 📜✨`);
+            }).catch(err => {
+                element.style.display = 'none';
+                alertBox("Error generating certificate PDF. Please try again.");
+            });
+        }
+
+        function resetQuiz() {
+            resultView.classList.add('hidden');
+            welcomeView.classList.remove('hidden');
+            document.getElementById('wizard-name-input').value = '';
+        }
+
+        function alertBox(message) {
+            const existingModal = document.getElementById('custom-modal');
+            if (existingModal) existingModal.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'custom-modal';
+            modal.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="parchment-texture border-2 border-amber-900 rounded-xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
+                    <div class="text-3xl">📜</div>
+                    <p class="font-garamond text-xl text-amber-950 font-semibold">${message}</p>
+                    <button onclick="document.getElementById('custom-modal').remove()" class="font-cinzel text-xs font-bold text-amber-100 bg-amber-900 px-5 py-2 rounded shadow">
+                        Close
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function romanNumeral(num) {
+            const lookup = {VII:7, VI:6, V:5, IV:4, III:3, II:2, I:1};
+            for (let i in lookup) {
+                if (num === lookup[i]) return i;
+            }
+            return num;
+        }
+    </script>
+</body>
+</html>
